@@ -1,0 +1,12 @@
+Seasons Trained:
+Seasons Tested Against:
+
+Features:
+Labels: 
+
+accuracy: 
+f1Score: 
+precision: 
+recall: 
+
+Notes:

@@ -35,7 +35,8 @@
     "global-require": "off",
     "no-await-in-loop": "off",
     "no-shadow": "off",
-    "one-var": "off"
+    "one-var": "off",
+    "import/extensions": "off"
   },
   "overrides": []
 }
