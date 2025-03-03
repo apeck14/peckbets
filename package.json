@@ -4,22 +4,20 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "node index.js",
-    "pg": "node playground.js",
-    "train": "node train.js",
-    "test": "node test.js"
+    "dev": "set NODE_NO_WARNINGS=1 && node index.js",
+    "pg": "node playground.js"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@tensorflow/tfjs-node": "^4.22.0",
-    "axios": "^1.7.9",
+    "@tensorflow/tfjs-node-gpu": "^4.22.0",
+    "axios": "^1.8.1",
     "csv-parser": "^3.2.0",
     "dotenv": "^16.4.7",
     "lodash": "^4.17.21",
-    "mongodb": "^6.13.1",
-    "mongoose": "^8.10.1",
+    "mongodb": "^6.14.0",
+    "mongoose": "^8.11.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-adblocker": "^2.13.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2"
