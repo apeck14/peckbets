@@ -1,6 +1,8 @@
 import NFLDataProcessor from "./src/tf/NFLDataProcessor.js"
 import NFLPredictionModel from "./src/tf/NFLPredictionModel.js"
 
+const incrementSave = false
+
 async function runNFLPrediction() {
   try {
     console.log("NFL Game Prediction Model")
@@ -25,7 +27,7 @@ async function runNFLPrediction() {
     const nflModel = new NFLPredictionModel()
     nflModel.buildModel()
 
-    await nflModel.trainModel(xTrain, yTrain, xTest, yTest)
+    await nflModel.trainModel(xTrain, yTrain, xTest, yTest, incrementSave)
 
     // Evaluate the model
     console.log("\n4. Evaluating model...")

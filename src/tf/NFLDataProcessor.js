@@ -3,8 +3,8 @@ import "dotenv/config"
 import * as tf from "@tensorflow/tfjs-node-gpu"
 import fs from "fs"
 
-import Game from "../../models/Game.js"
-import Season from "../../models/Season.js"
+import Game from "../models/Game.js"
+import Season from "../models/Season.js"
 import { normalize } from "../util/functions.js"
 import connectDB from "../util/mongoose.js"
 

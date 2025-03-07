@@ -5,9 +5,18 @@ import puppeteer from "puppeteer-extra"
 import AdblockerPlugin from "puppeteer-extra-plugin-adblocker"
 import StealthPlugin from "puppeteer-extra-plugin-stealth"
 
+import Game from "../models/Game.js"
 import connectDB from "../util/mongoose.js"
+import getPFRGameData from "./getPFRGameData.js"
 
 await connectDB()
+
+function splitArray(arr) {
+  const mid = Math.floor(arr.length / 2)
+  const left = arr.slice(0, mid)
+  const right = arr.slice(mid)
+  return [left, right]
+}
 
 // async function gatherWeatherEntries() {
 //   const ALL_STADIUMS = await Stadium.find({}).lean()
@@ -38,13 +47,15 @@ puppeteer
   })
   .then(async (browser) => {
     try {
-      //   const entries = loadJSON("./data/missingGametime.json")
+      const GAMES = await Game.find({}).lean()
 
-      // set scrapers to run here
-      const [gametimes] = await Promise.all([])
+      const [GAMES1, GAMES2] = splitArray(GAMES)
 
-      const arr = JSON.stringify(gametimes, null, 2)
-      fs.writeFileSync("data/missingGametime.json", arr)
+      //* set scrapers to run here
+      const [drives] = await Promise.all([getPFRGameData(browser, GAMES2, 350)])
+
+      const arr = JSON.stringify(drives, null, 2)
+      fs.writeFileSync("data/drives2.json", arr)
     } catch (e) {
       console.log(e)
     } finally {
