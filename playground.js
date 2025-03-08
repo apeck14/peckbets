@@ -1,9 +1,11 @@
 import "dotenv/config"
 
-import { readFileSync } from "fs"
-import mongoose from "mongoose"
+import csvParser from "csv-parser"
+import fs from "fs"
 
-import Game, { driveSchema } from "./src/models/Game.js"
+import Game from "./src/schemas/Game.js"
+import PlayByPlay from "./src/schemas/PlayByPlay.js"
+import { parseTimeLeft } from "./src/util/functions.js"
 import connectDB from "./src/util/mongoose.js"
 
 await connectDB()
@@ -86,82 +88,124 @@ async function playground() {
   //   }
   // }
   // ! ---------------------- READ FROM JSON -------------------------------
-
-  const drives1 = JSON.parse(readFileSync("./data/drives1.json", "utf-8"))
-  const drives2 = JSON.parse(readFileSync("./data/drives2.json", "utf-8"))
-
-  const Drive = mongoose.model("Drive", driveSchema)
-
-  for (const g of drives1) {
-    const awayDrives = g.drives.away.map((d) => new Drive(d).toObject())
-    const homeDrives = g.drives.home.map((d) => new Drive(d).toObject())
-
-    await Game.updateOne(
-      { "ids.pfr": g.pfr },
-      {
-        $set: {
-          "away.stats.drives": awayDrives,
-          "home.stats.drives": homeDrives,
-        },
-      },
-    )
-
-    console.log(g.pfr)
-  }
-
-  for (const g of drives2) {
-    const awayDrives = g.drives.away.map((d) => new Drive(d).toObject())
-    const homeDrives = g.drives.home.map((d) => new Drive(d).toObject())
-
-    await Game.updateOne(
-      { "ids.pfr": g.pfr },
-      {
-        $set: {
-          "away.stats.drives": awayDrives,
-          "home.stats.drives": homeDrives,
-        },
-      },
-    )
-
-    console.log(g.pfr)
-  }
-
+  // const drives1 = JSON.parse(readFileSync("./data/drives1.json", "utf-8"))
+  // const drives2 = JSON.parse(readFileSync("./data/drives2.json", "utf-8"))
+  // const Drive = mongoose.model("Drive", driveSchema)
+  // for (const g of drives1) {
+  //   const awayDrives = g.drives.away.map((d) => new Drive(d).toObject())
+  //   const homeDrives = g.drives.home.map((d) => new Drive(d).toObject())
+  //   await Game.updateOne(
+  //     { "ids.pfr": g.pfr },
+  //     {
+  //       $set: {
+  //         "away.stats.drives": awayDrives,
+  //         "home.stats.drives": homeDrives,
+  //       },
+  //     },
+  //   )
+  //   console.log(g.pfr)
+  // }
+  // for (const g of drives2) {
+  //   const awayDrives = g.drives.away.map((d) => new Drive(d).toObject())
+  //   const homeDrives = g.drives.home.map((d) => new Drive(d).toObject())
+  //   await Game.updateOne(
+  //     { "ids.pfr": g.pfr },
+  //     {
+  //       $set: {
+  //         "away.stats.drives": awayDrives,
+  //         "home.stats.drives": homeDrives,
+  //       },
+  //     },
+  //   )
+  //   console.log(g.pfr)
+  // }
   // ! ---------------------- READ FROM CSV -------------------------------
-  // const updates = []
-  // fs.createReadStream("data/stadiums.csv")
-  //   .pipe(csv())
-  //   .on("data", (row) => {
-  //     try {
-  //       // Push the update promise to an array
-  //       updates.push(
-  //         Stadium.updateOne(
-  //           { pfr: row.pfrId },
-  //           {
-  //             $set: {
-  //               timezone: row.timezone,
-  //             },
-  //           },
-  //         ),
-  //       )
-  //     } catch (error) {
-  //       console.error("Error processing row:", row, error)
-  //     }
-  //   })
-  //   .on("end", async () => {
-  //     console.log(`✅ Processing ${updates.length} updates...`)
-  //     try {
-  //       // await all updates to ensure they complete
-  //       await Promise.all(updates)
-  //       // const arr = JSON.stringify(missingGametime, null, 2)
-  //       // fs.writeFileSync("data/missingGametime.json", arr)
-  //       console.log("🚀 All updates completed successfully!")
-  //     } catch (error) {
-  //       console.error("❌ Error updating documents:", error)
-  //     } finally {
-  //       process.exit(0)
-  //     }
-  //   })
-  //   .on("error", console.error)
+
+  const GAMES = await Game.find({}).lean()
+  const updates = []
+
+  fs.readdir("data/playByPlays", async (err, files) => {
+    if (err) {
+      console.error("Error reading directory:", err)
+      return
+    }
+
+    const filePromises = files.map(
+      (file) =>
+        new Promise((resolve, reject) => {
+          try {
+            const game = GAMES.find((g) => g.ids.pfr === file.split(".csv")[0])
+
+            if (!game) {
+              console.warn(`Game not found for file: ${file}`)
+              resolve() // Skip processing this file
+            }
+
+            const entry = {
+              pfr: game.ids.pfr,
+              plays: [],
+              result: game.result,
+              season: game.season,
+            }
+
+            fs.createReadStream(`data/playByPlays/${file}`)
+              .pipe(csvParser())
+              .on("data", (row) => {
+                try {
+                  if (row.Quarter === "Quarter" && row.Detail === "Detail") return
+
+                  const keys = Object.keys(row)
+                  const homeTeam = keys.find((key) => file.includes(key.toLowerCase()))
+
+                  const nonAwayKeys = ["Quarter", "Time", "Down", "ToGo", "Location", "Detail", "EPB", "EPA", homeTeam]
+                  const awayTeam = keys.find((key) => !nonAwayKeys.includes(key))
+
+                  const awayPts = parseInt(row[awayTeam])
+                  const homePts = parseInt(row[homeTeam])
+                  const epa = parseFloat(row.EPA)
+                  const epb = parseFloat(row.EPB)
+                  const ydsToGo = parseInt(row.ToGo)
+
+                  const play = {
+                    awayPts: !Number.isNaN(awayPts) ? awayPts : null,
+                    detail: row.Detail,
+                    down: parseInt(row.Down) || null,
+                    epAfter: !Number.isNaN(epa) ? epa : null,
+                    epBefore: !Number.isNaN(epb) ? epb : null,
+                    homePts: !Number.isNaN(homePts) ? homePts : null,
+                    location: row.Location || null,
+                    quarter: parseInt(row.Quarter) || null,
+                    timeLeftInQuarter: row.Time ? parseTimeLeft(row.Time) : null,
+                    ydsUntil1st: !Number.isNaN(ydsToGo) ? ydsToGo : null,
+                  }
+
+                  entry.plays.push(play)
+                } catch (error) {
+                  console.error("Error processing row:", row, error)
+                }
+              })
+              .on("end", () => {
+                updates.push(entry)
+                resolve() // Resolve the promise when processing is complete
+              })
+              .on("error", (error) => {
+                console.error("Error processing file:", file, error)
+                reject(error)
+              })
+          } catch (error) {
+            console.error("Error processing file:", file, error)
+            reject(error)
+          }
+        }),
+    )
+
+    console.log("Inserting...")
+
+    // Wait for all files to be processed before inserting into the database
+    await Promise.all(filePromises)
+    await PlayByPlay.insertMany(updates)
+    console.log("Successfully inserted into the database.")
+  })
 }
 
 playground()

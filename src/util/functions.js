@@ -16,3 +16,20 @@ export const normalize = (value, min, max) => {
   // Perform normalization
   return (value - min) / (max - min)
 }
+
+export const splitArray = (arr) => {
+  const mid = Math.floor(arr.length / 2)
+  const left = arr.slice(0, mid)
+  const right = arr.slice(mid)
+  return [left, right]
+}
+
+/**
+ * Convert 'MM:SS' to seconds
+ * @param {String} timeStr
+ * @returns {Number} Seconds representing time string
+ */
+export const parseTimeLeft = (timeStr) => {
+  const [minutes, seconds] = timeStr.split(":").map(Number)
+  return minutes * 60 + seconds
+}

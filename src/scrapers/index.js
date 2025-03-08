@@ -1,34 +1,14 @@
 import "dotenv/config"
 
-import fs from "fs"
 import puppeteer from "puppeteer-extra"
 import AdblockerPlugin from "puppeteer-extra-plugin-adblocker"
 import StealthPlugin from "puppeteer-extra-plugin-stealth"
 
-import Game from "../models/Game.js"
+import Game from "../schemas/Game.js"
 import connectDB from "../util/mongoose.js"
-import getPFRGameData from "./getPFRGameData.js"
+import getPFRPlayCSV from "./getPFRPlayCSV.js"
 
 await connectDB()
-
-function splitArray(arr) {
-  const mid = Math.floor(arr.length / 2)
-  const left = arr.slice(0, mid)
-  const right = arr.slice(mid)
-  return [left, right]
-}
-
-// async function gatherWeatherEntries() {
-//   const ALL_STADIUMS = await Stadium.find({}).lean()
-//   const ALL_GAMES = await Game.find({}).lean()
-
-//   const data = []
-
-//   for (const id of missingWeatherGamePfrIds) {
-//     const game = ALL_GAMES.find((g) => g.ids.pfr === id)
-//   }
-//   return [] // [{ city: "", state: "", date: new Date() }]
-// }
 
 puppeteer.use(StealthPlugin())
 puppeteer.use(AdblockerPlugin({ blockTrackers: true }))
@@ -47,15 +27,14 @@ puppeteer
   })
   .then(async (browser) => {
     try {
-      const GAMES = await Game.find({}).lean()
-
-      const [GAMES1, GAMES2] = splitArray(GAMES)
+      const missingGames = ["200001300oti"]
+      const GAMES = await Game.find({ "ids.pfr": { $in: missingGames } }).lean()
 
       //* set scrapers to run here
-      const [drives] = await Promise.all([getPFRGameData(browser, GAMES2, 350)])
+      await getPFRPlayCSV(browser, GAMES, 500)
 
-      const arr = JSON.stringify(drives, null, 2)
-      fs.writeFileSync("data/drives2.json", arr)
+      // const arr = JSON.stringify(drives, null, 2)
+      // fs.writeFileSync("data/drives2.json", arr)
     } catch (e) {
       console.log(e)
     } finally {

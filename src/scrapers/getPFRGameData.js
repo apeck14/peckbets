@@ -45,63 +45,63 @@ export default async (browser, games = [], delay = 501) => {
       // const gametime = startTime.slice(startTime.lastIndexOf(" ") + 1)
 
       // * DRIVES
-      const drives = await page.evaluate(() => {
-        const drivesObj = { away: [], home: [] }
+      // const drives = await page.evaluate(() => {
+      //   const drivesObj = { away: [], home: [] }
 
-        const homeDrives = document.querySelectorAll("#home_drives tbody tr")
-        const awayDrives = document.querySelectorAll("#vis_drives tbody tr")
+      //   const homeDrives = document.querySelectorAll("#home_drives tbody tr")
+      //   const awayDrives = document.querySelectorAll("#vis_drives tbody tr")
 
-        for (const row of homeDrives) {
-          const driveNum = row.getAttribute("data-row")
-          const los = row.querySelector("td[data-stat='start_at']")
-          const netYds = row.querySelector("td[data-stat='net_yds']")
-          const plays = row.querySelector("td[data-stat='play_count_tip']")
-          const result = row.querySelector("td[data-stat='end_event']")
-          const tos = row.querySelector("td[data-stat='time_total']")
+      //   for (const row of homeDrives) {
+      //     const driveNum = row.getAttribute("data-row")
+      //     const los = row.querySelector("td[data-stat='start_at']")
+      //     const netYds = row.querySelector("td[data-stat='net_yds']")
+      //     const plays = row.querySelector("td[data-stat='play_count_tip']")
+      //     const result = row.querySelector("td[data-stat='end_event']")
+      //     const tos = row.querySelector("td[data-stat='time_total']")
 
-          drivesObj.home.push({
-            driveNum: parseInt(driveNum) + 1,
-            los: los?.textContent.trim(),
-            netYds: parseInt(netYds?.textContent.trim()),
-            plays: parseInt(plays?.textContent.trim()),
-            result: result?.textContent.trim().toUpperCase(),
-            tos: tos?.textContent.trim(),
-          })
-        }
+      //     drivesObj.home.push({
+      //       driveNum: parseInt(driveNum) + 1,
+      //       los: los?.textContent.trim(),
+      //       netYds: parseInt(netYds?.textContent.trim()),
+      //       plays: parseInt(plays?.textContent.trim()),
+      //       result: result?.textContent.trim().toUpperCase(),
+      //       tos: tos?.textContent.trim(),
+      //     })
+      //   }
 
-        for (const row of awayDrives) {
-          const driveNum = row.getAttribute("data-row")
-          const los = row.querySelector("td[data-stat='start_at']")
-          const netYds = row.querySelector("td[data-stat='net_yds']")
-          const plays = row.querySelector("td[data-stat='play_count_tip']")
-          const result = row.querySelector("td[data-stat='end_event']")
-          const tos = row.querySelector("td[data-stat='time_total']")
+      //   for (const row of awayDrives) {
+      //     const driveNum = row.getAttribute("data-row")
+      //     const los = row.querySelector("td[data-stat='start_at']")
+      //     const netYds = row.querySelector("td[data-stat='net_yds']")
+      //     const plays = row.querySelector("td[data-stat='play_count_tip']")
+      //     const result = row.querySelector("td[data-stat='end_event']")
+      //     const tos = row.querySelector("td[data-stat='time_total']")
 
-          drivesObj.away.push({
-            driveNum: parseInt(driveNum) + 1,
-            los: los?.textContent.trim(),
-            netYds: parseInt(netYds?.textContent.trim()),
-            plays: parseInt(plays?.textContent.trim()),
-            result: result?.textContent.trim().toUpperCase(),
-            tos: tos?.textContent.trim(),
-          })
-        }
+      //     drivesObj.away.push({
+      //       driveNum: parseInt(driveNum) + 1,
+      //       los: los?.textContent.trim(),
+      //       netYds: parseInt(netYds?.textContent.trim()),
+      //       plays: parseInt(plays?.textContent.trim()),
+      //       result: result?.textContent.trim().toUpperCase(),
+      //       tos: tos?.textContent.trim(),
+      //     })
+      //   }
 
-        return drivesObj
-      })
+      //   return drivesObj
+      // })
 
-      // convert line of scrimmages & time of possesion to decimals
-      for (const d of drives.home) {
-        d.tos = parseTos(d.tos)
-        d.los = parseLos(d.los)
-      }
+      // // convert line of scrimmages & time of possesion to decimals
+      // for (const d of drives.home) {
+      //   d.tos = parseTos(d.tos)
+      //   d.los = parseLos(d.los)
+      // }
 
-      for (const d of drives.away) {
-        d.tos = parseTos(d.tos)
-        d.los = parseLos(d.los)
-      }
+      // for (const d of drives.away) {
+      //   d.tos = parseTos(d.tos)
+      //   d.los = parseLos(d.los)
+      // }
 
-      const newEntry = { drives, pfr: g.ids.pfr }
+      const newEntry = { pfr: g.ids.pfr }
 
       newEntries.push(newEntry)
 
