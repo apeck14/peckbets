@@ -6,7 +6,7 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth"
 
 import Game from "../schemas/Game.js"
 import connectDB from "../util/mongoose.js"
-import getPFRPlayCSV from "./getPFRPlayCSV.js"
+import getPlayByPlayData from "./getPlayByPlayData.js"
 
 await connectDB()
 
@@ -27,14 +27,30 @@ puppeteer
   })
   .then(async (browser) => {
     try {
-      const missingGames = ["200001300oti"]
-      const GAMES = await Game.find({ "ids.pfr": { $in: missingGames } }).lean()
+      const errors = ["201312020sea", "201909150atl"]
+      const GAMES = await Game.find({ "ids.pfr": { $in: errors } }).lean()
+
+      /*
+      broken tables:
+      200009030nwe... 1 / 12
+      200009100cin... 2 / 12
+      200009100sdg... 3 / 12
+      200009240atl... 4 / 12
+      200010080chi... 5 / 12
+      200010150nor... 6 / 12
+      200010160oti... 7 / 12
+      200011120sdg... 8 / 12
+      200012310rav... 9 / 12
+      200109300was... 10 / 12
+      200112090ram... 11 / 12
+      201810280rai... 12 / 12
+
+      overtime:
+      200010230nyj
+      */
 
       //* set scrapers to run here
-      await getPFRPlayCSV(browser, GAMES, 500)
-
-      // const arr = JSON.stringify(drives, null, 2)
-      // fs.writeFileSync("data/drives2.json", arr)
+      await getPlayByPlayData(browser, GAMES)
     } catch (e) {
       console.log(e)
     } finally {

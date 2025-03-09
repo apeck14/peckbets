@@ -33,3 +33,38 @@ export const parseTimeLeft = (timeStr) => {
   const [minutes, seconds] = timeStr.split(":").map(Number)
   return minutes * 60 + seconds
 }
+
+export const getTeamAbbrByName = (teamName) => {
+  const TEAMS = loadJSON("../../data/TeamToAbbr.json")
+
+  if (!Object.prototype.hasOwnProperty.call(TEAMS, teamName)) {
+    console.log(`${teamName} does not exist.`)
+  }
+
+  return TEAMS[teamName]
+}
+
+export const getReceivingTeamFromDetail = (detail) => {
+  const match = detail.match(/(\w+)\s+to receive/i)
+
+  if (!match) {
+    console.log(`No team found in: ${detail}`)
+    return null
+  }
+
+  return match[1]
+}
+
+export const getTeamAbbreviationsFromPlays = (plays) => {
+  const abbrs = []
+
+  for (const p of plays) {
+    if (abbrs.length >= 2) return abbrs
+
+    const abbr = p.location?.split(" ")[0]
+
+    if (abbr && !abbrs.includes(abbr)) abbrs.push(abbr)
+  }
+
+  return abbrs
+}

@@ -8,6 +8,7 @@ const playSchema = new mongoose.Schema({
   epBefore: { default: null, type: Number },
   homePts: { default: null, min: 0, type: Number },
   location: { default: null, type: String },
+  possession: { default: null, type: String },
   quarter: { default: null, max: 5, min: 1, type: Number }, // 5 for OT
   timeLeftInQuarter: { default: null, max: 900, min: 0, type: Number }, // seconds
   ydsUntil1st: { default: null, type: Number },
