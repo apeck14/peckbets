@@ -34,14 +34,22 @@ export const parseTimeLeft = (timeStr) => {
   return minutes * 60 + seconds
 }
 
-export const getTeamAbbrByName = (teamName) => {
+export const getTeamAbbrByName = (teamName, confirmedTeamAbbrs) => {
   const TEAMS = loadJSON("../../data/TeamToAbbr.json")
 
   if (!Object.prototype.hasOwnProperty.call(TEAMS, teamName)) {
     console.log(`${teamName} does not exist.`)
   }
 
-  return TEAMS[teamName]
+  const possibleAbbrs = TEAMS[teamName]
+
+  for (const a of possibleAbbrs) {
+    if (confirmedTeamAbbrs?.includes(a)) return a
+  }
+
+  console.log(`No matching abbr for ${teamName} in ${confirmedTeamAbbrs}`)
+
+  return null
 }
 
 export const getReceivingTeamFromDetail = (detail) => {
